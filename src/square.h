@@ -13,15 +13,21 @@ class Square : public QGraphicsObject
     QRectF _rect;
     Piece *_piece;
     QPixmap *_texture;
+    QPixmap *_textureSelected;
+
+    bool _isHighlighted;
 
 public:
 
-    Square(const QPoint &matrixPos, const QRectF &rect, QGraphicsItem *parent, QPixmap *texture);
+    Square(const QPoint &matrixPos, const QRectF &rect, QGraphicsItem *parent, QPixmap *texture, QPixmap *textureSelected);
     Piece *piece() const;
     void setPiece(Piece *piece);
 
     QRectF boundingRect() const override;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr) override;
+
+    bool isHighlighted() const;
+    void setIsHighlighted(bool isHighlighted);
 
 protected:
 

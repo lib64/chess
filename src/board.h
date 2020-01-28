@@ -26,8 +26,14 @@ private:
 
     QRectF _rect;
     Board::Player _turn;
+
     QPixmap *_whitePixmap;
     QPixmap *_blackPixmap;
+    QPixmap *_whitePixmapSelected;
+    QPixmap *_blackPixmapSelected;
+
+    bool _isSelected;
+    QPoint _squareSelected;
 
     void initSquares();
 

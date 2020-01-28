@@ -17,7 +17,10 @@ QString Pawn::to_string() const
 bool Pawn::isMoveValid(Board *board, const QPoint &from, const QPoint &to)
 {
 
+    Square *fromSquare = board->getSquare(from.x(), from.y());
     Square *toSquare = board->getSquare(to.x(), to.y());
+
+    Piece *fromPiece = fromSquare->piece();
     Piece *toPiece = toSquare->piece();
 
     if(toPiece != nullptr) {
@@ -66,10 +69,14 @@ bool Pawn::isMoveValid(Board *board, const QPoint &from, const QPoint &to)
     else if(abs(dy) == 2) {
 
         // our pawn can not have moved before
-        if(toPiece->getHasMoved()) {
+        if(fromPiece->getHasMoved()) {
             return false;
         }
 
+        // our pawn cant move in the x direction
+        if(abs(dx) != 0) {
+            return false;
+        }
 
         // the pawn cant jump any pieces
         Square *middleSquare;

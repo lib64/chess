@@ -25,8 +25,9 @@ void Board::initSquares()
         for(int x = 0; x < BOARD_SIZE; x++) {
 
             QPixmap *pix = (isWhite) ? _whitePixmap : _blackPixmap;
+            QPixmap *pixSelected = (isWhite) ? _whitePixmapSelected : _blackPixmapSelected;
 
-            Square *square = new Square(QPoint(x,y), QRectF(0,0,sw,sh), this, pix);
+            Square *square = new Square(QPoint(x,y), QRectF(0,0,sw,sh), this, pix, pixSelected);
 
             QObject::connect(square, &Square::leftClick, this, &Board::on_actionSquareLeftClick);
 
@@ -94,10 +95,15 @@ Board::Board(const QRectF &rect, QGraphicsItem *parent)
 {
 
     _rect = rect;
-    _turn = Board::Player::White;
+    _turn = Board::Player::Black;
+
+    _isSelected = false;
+    _squareSelected = QPoint(-1,-1);
 
     _whitePixmap = new QPixmap(":/images/white.jpg");
     _blackPixmap = new QPixmap(":/images/black.jpg");
+    _whitePixmapSelected = new QPixmap(":/images/white-selected.jpg");
+    _blackPixmapSelected = new QPixmap(":/images/black-selected.jpg");
 
     initSquares();
     initPieces();
@@ -154,13 +160,45 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
 {
     Square *square = getSquare(matrixPos.x(), matrixPos.y());
     Piece *piece = square->piece();
-    if(piece == nullptr) {
-        return;
-    }
 
-    for(int y = 0; y < BOARD_SIZE; y++) {
-        for(int x = 0; x < BOARD_SIZE; x++) {
-            // check each square
+    if(!_isSelected) {
+        if(piece == nullptr) {
+            return;
+        }
+        if(static_cast<int>(piece->getOwner()) != static_cast<int>(getTurn())) {
+            return;
+        }
+        for(int y = 0; y < BOARD_SIZE; y++) {
+            for(int x = 0; x < BOARD_SIZE; x++) {
+                if(x == matrixPos.x() && y == matrixPos.y()) {
+                    continue;
+                }
+                if(piece->getType() == Piece::Type::Pawn) {
+                    if(Pawn::isMoveValid(this,matrixPos,QPoint(x,y))) {
+                        getSquare(x,y)->setIsHighlighted(true);
+                        _isSelected = true;
+                        _squareSelected = QPoint(x,y);
+                        update();
+                    }
+                }
+            }
+        }
+
+    } else {
+
+        Square *srcSquare = getSquare(_squareSelected.x(), _squareSelected.y());
+        Piece *srcPiece = srcSquare->piece();
+
+        Square *destSquare = getSquare(matrixPos.x(), matrixPos.y());
+        Piece *destPiece = destSquare->piece();
+
+        if(destSquare->isHighlighted()) {
+
+            getSquare(srcSquare->x(), srcSquare->y())->setPiece(nullptr);
+            getSquare(destSquare->x(), destSquare->y())->setPiece(srcPiece);
+
+            _isSelected = false;
+
         }
     }
 }

@@ -3,13 +3,25 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QPainter>
 
-Square::Square(const QPoint &matrixPos, const QRectF &rect, QGraphicsItem *parent, QPixmap *texture)
+bool Square::isHighlighted() const
+{
+    return _isHighlighted;
+}
+
+void Square::setIsHighlighted(bool isHighlighted)
+{
+    _isHighlighted = isHighlighted;
+}
+
+Square::Square(const QPoint &matrixPos, const QRectF &rect, QGraphicsItem *parent, QPixmap *texture, QPixmap *textureSelected)
     : QGraphicsObject(parent)
 {
     _matrixPos = matrixPos;
     _piece = nullptr;
     _rect = rect;
     _texture = texture;
+    _textureSelected = textureSelected;
+    _isHighlighted = false;
 }
 
 Piece *Square::piece() const
@@ -33,7 +45,14 @@ void Square::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
     Q_UNUSED(widget)
 
     QBrush brush(*_texture);
-    painter->setBrush(brush);
+    QBrush brush_selected(*_textureSelected);
+
+    if(_isHighlighted) {
+        painter->setBrush(brush_selected);
+    } else {
+        painter->setBrush(brush);
+    }
+
     painter->drawRect(_rect);
 
     QFont font;
