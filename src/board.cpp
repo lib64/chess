@@ -65,9 +65,9 @@ void Board::initPieces()
     Knight *wk2 = new Knight(_rect, Piece::Owner::White);
     Knight *bk1 = new Knight(_rect, Piece::Owner::Black);
     Knight *bk2 = new Knight(_rect, Piece::Owner::Black);
-    getSquare(1,2)->setPiece(wk1);
+    getSquare(1,7)->setPiece(wk1);
     getSquare(6,7)->setPiece(wk2);
-    getSquare(1,0)->setPiece(bk1);
+    getSquare(1,5)->setPiece(bk1);
     getSquare(6,0)->setPiece(bk2);
 
     Bishop *wb1 = new Bishop(_rect, Piece::Owner::White);
@@ -114,6 +114,8 @@ Board::~Board()
 {
     delete _whitePixmap;
     delete _blackPixmap;
+    delete _whitePixmapSelected;
+    delete _blackPixmapSelected;
 
     for(int y = 0; y < BOARD_SIZE; y++) {
         for(int x = 0; x < BOARD_SIZE; x++) {

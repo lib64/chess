@@ -61,7 +61,7 @@ void Square::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QW
 
     if(_piece != nullptr) {
         QFontMetrics fm(font);
-        int w = fm.width(_piece->to_string());
+        int w = fm.horizontalAdvance(_piece->to_string());
         int h = fm.height();
 
         qreal px = boundingRect().center().x() - w / 2;
