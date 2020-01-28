@@ -65,7 +65,7 @@ void Board::initPieces()
     Knight *wk2 = new Knight(_rect, Piece::Owner::White);
     Knight *bk1 = new Knight(_rect, Piece::Owner::Black);
     Knight *bk2 = new Knight(_rect, Piece::Owner::Black);
-    getSquare(1,7)->setPiece(wk1);
+    getSquare(1,2)->setPiece(wk1);
     getSquare(6,7)->setPiece(wk2);
     getSquare(1,0)->setPiece(bk1);
     getSquare(6,0)->setPiece(bk2);
@@ -156,6 +156,16 @@ void Board::changeTurn()
             : Board::Player::White;
 }
 
+void Board::clearHighlighs()
+{
+    for(int y = 0; y < BOARD_SIZE; y++) {
+        for(int x = 0; x < BOARD_SIZE; x++) {
+            getSquare(x,y)->setIsHighlighted(false);
+        }
+    }
+    update();
+}
+
 void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
 {
     Square *square = getSquare(matrixPos.x(), matrixPos.y());
@@ -168,6 +178,10 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
         if(static_cast<int>(piece->getOwner()) != static_cast<int>(getTurn())) {
             return;
         }
+
+        _isSelected = true;
+        _squareSelected = matrixPos;
+
         for(int y = 0; y < BOARD_SIZE; y++) {
             for(int x = 0; x < BOARD_SIZE; x++) {
                 if(x == matrixPos.x() && y == matrixPos.y()) {
@@ -176,8 +190,6 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
                 if(piece->getType() == Piece::Type::Pawn) {
                     if(Pawn::isMoveValid(this,matrixPos,QPoint(x,y))) {
                         getSquare(x,y)->setIsHighlighted(true);
-                        _isSelected = true;
-                        _squareSelected = QPoint(x,y);
                         update();
                     }
                 }
@@ -194,12 +206,16 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
 
         if(destSquare->isHighlighted()) {
 
-            getSquare(srcSquare->x(), srcSquare->y())->setPiece(nullptr);
-            getSquare(destSquare->x(), destSquare->y())->setPiece(srcPiece);
+            srcSquare->setPiece(nullptr);
+            destSquare->setPiece(srcPiece);
 
-            _isSelected = false;
+            srcPiece->setHasMoved(true);
+
+            delete destPiece;
 
         }
+        _isSelected = false;
+        clearHighlighs();
     }
 }
 

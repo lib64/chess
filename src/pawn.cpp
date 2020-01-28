@@ -64,6 +64,15 @@ bool Pawn::isMoveValid(Board *board, const QPoint &from, const QPoint &to)
                 return false;
             }
         }
+
+        // if we are moving a single space in the y direction
+        if(abs(dx) == 0) {
+            // we cant move to an occupied space
+            if(toPiece != nullptr) {
+                return false;
+            }
+        }
+
     }
     // if we are moveing twice in the y direction
     else if(abs(dy) == 2) {

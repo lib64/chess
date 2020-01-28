@@ -54,6 +54,8 @@ public:
 
     void changeTurn();
 
+    void clearHighlighs();
+
 public slots:
 
     void on_actionSquareLeftClick(const QPoint &matrixPos);
