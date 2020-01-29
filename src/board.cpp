@@ -95,7 +95,7 @@ Board::Board(const QRectF &rect, QGraphicsItem *parent)
 {
 
     _rect = rect;
-    _turn = Board::Player::Black;
+    _turn = Board::Player::White;
 
     _isSelected = false;
     _squareSelected = QPoint(-1,-1);
@@ -191,6 +191,11 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
                 }
                 if(piece->getType() == Piece::Type::Pawn) {
                     if(Pawn::isMoveValid(this,matrixPos,QPoint(x,y))) {
+                        getSquare(x,y)->setIsHighlighted(true);
+                        update();
+                    }
+                } else if(piece->getType() == Piece::Type::Rook) {
+                    if(Rook::isMoveValid(this,matrixPos,QPoint(x,y))) {
                         getSquare(x,y)->setIsHighlighted(true);
                         update();
                     }
