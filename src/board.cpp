@@ -67,7 +67,7 @@ void Board::initPieces()
     Knight *bk2 = new Knight(_rect, Piece::Owner::Black);
     getSquare(1,7)->setPiece(wk1);
     getSquare(6,7)->setPiece(wk2);
-    getSquare(1,5)->setPiece(bk1);
+    getSquare(1,0)->setPiece(bk1);
     getSquare(6,0)->setPiece(bk2);
 
     Bishop *wb1 = new Bishop(_rect, Piece::Owner::White);
