@@ -9,6 +9,7 @@
 
 #include <QBrush>
 #include <QObject>
+#include <QMessageBox>
 
 #include <QDebug>
 
@@ -122,6 +123,9 @@ Board::Board(const QRectF &rect, QGraphicsItem *parent)
 
     _isSelected = false;
     _squareSelected = QPoint(-1,-1);
+
+    _isWhiteInCheck = false;
+    _isBlackInCheck = false;
 
     _whitePixmap = new QPixmap(":/images/white.jpg");
     _blackPixmap = new QPixmap(":/images/black.jpg");
@@ -287,6 +291,31 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
             destSquare->setPiece(srcPiece);
             srcPiece->setHasMoved(true);
 
+            // if moving player is in check
+            if(inCheck(getTurn())) {
+
+                QMessageBox *msgBox = new QMessageBox;
+                msgBox->setText("Illegal move: puts moving player in check.");
+                msgBox->exec();
+
+                _isSelected = false;
+                clearHighlighs();
+                return;
+            }
+
+            // if non-moving player is in check
+            if(inCheck( (getTurn() == Board::Player::White) ? Board::Player::Black : Board::Player::White )) {
+
+
+                update();
+                QMessageBox *msgBox = new QMessageBox;
+                msgBox->setText("check.");
+                msgBox->exec();
+
+
+            }
+
+
             // delete the dest piece
             if(destPiece != nullptr) {
                 if(getTurn() == Board::Player::White) {
@@ -298,17 +327,9 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
             }
 
 
-            if(inCheck(Board::Player::White)) {
-                qDebug() << "white in check";
-            }
-            if(inCheck(Board::Player::Black)) {
-                qDebug() << "black in check";
-            }
-
             changeTurn();
-
-
         }
+
         _isSelected = false;
         clearHighlighs();
     }

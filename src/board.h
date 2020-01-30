@@ -38,6 +38,10 @@ private:
     bool _isSelected;
     QPoint _squareSelected;
 
+
+    bool _isWhiteInCheck;
+    bool _isBlackInCheck;
+
     void initSquares();
 
     void initPieces();
