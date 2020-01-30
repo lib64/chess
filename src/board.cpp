@@ -199,6 +199,11 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
                         getSquare(x,y)->setIsHighlighted(true);
                         update();
                     }
+                } else if(piece->getType() == Piece::Type::Bishop) {
+                    if(Bishop::isMoveValid(this,matrixPos,QPoint(x,y))) {
+                        getSquare(x,y)->setIsHighlighted(true);
+                        update();
+                    }
                 }
             }
         }
