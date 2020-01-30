@@ -168,6 +168,12 @@ void Board::clearHighlighs()
     update();
 }
 
+bool Board::inCheck(Board::Player player)
+{
+
+
+}
+
 void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
 {
     Square *square = getSquare(matrixPos.x(), matrixPos.y());
@@ -190,23 +196,10 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
                 if(x == matrixPos.x() && y == matrixPos.y()) {
                     continue;
                 }
-
-                bool (*validator)(Board *, const QPoint &, const QPoint &);
-
-                switch(piece->getType()) {
-                case Piece::Type::Pawn: validator = & Pawn::isMoveValid; break;
-                case Piece::Type::Rook: validator = & Rook::isMoveValid; break;
-                case Piece::Type::Bishop: validator = & Bishop::isMoveValid; break;
-                case Piece::Type::Knight: validator = & Knight::isMoveValid; break;
-                case Piece::Type::Queen: validator = & Queen::isMoveValid; break;
-                case Piece::Type::King: validator = & King::isMoveValid; break;
-                }
-
-                if(validator(this,matrixPos,QPoint(x,y))) {
+                if(getValidator(piece->getType())(this,matrixPos,QPoint(x,y))) {
                     getSquare(x,y)->setIsHighlighted(true);
                     update();
                 }
-
             }
         }
 
@@ -222,28 +215,26 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
 
             srcSquare->setPiece(nullptr);
             destSquare->setPiece(srcPiece);
-
             srcPiece->setHasMoved(true);
 
+            changeTurn();
             delete destPiece;
-
         }
         _isSelected = false;
         clearHighlighs();
     }
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+Validator getValidator(Piece::Type type)
+{
+    bool (*val)(Board *, const QPoint &, const QPoint &);
+    switch(type) {
+    case Piece::Type::Pawn: val = & Pawn::isMoveValid; break;
+    case Piece::Type::Rook: val = & Rook::isMoveValid; break;
+    case Piece::Type::Bishop: val = & Bishop::isMoveValid; break;
+    case Piece::Type::Knight: val = & Knight::isMoveValid; break;
+    case Piece::Type::Queen: val = & Queen::isMoveValid; break;
+    case Piece::Type::King: val = & King::isMoveValid; break;
+    }
+    return val;
+}

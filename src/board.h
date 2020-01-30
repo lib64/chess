@@ -56,10 +56,16 @@ public:
 
     void clearHighlighs();
 
+    bool inCheck(Board::Player player);
+
 public slots:
 
     void on_actionSquareLeftClick(const QPoint &matrixPos);
 
 };
+
+typedef bool (*Validator)(Board *, const QPoint &, const QPoint &);
+
+Validator getValidator(Piece::Type type);
 
 #endif // BOARD_H
