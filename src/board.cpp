@@ -186,25 +186,27 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
 
         for(int y = 0; y < BOARD_SIZE; y++) {
             for(int x = 0; x < BOARD_SIZE; x++) {
+
                 if(x == matrixPos.x() && y == matrixPos.y()) {
                     continue;
                 }
-                if(piece->getType() == Piece::Type::Pawn) {
-                    if(Pawn::isMoveValid(this,matrixPos,QPoint(x,y))) {
-                        getSquare(x,y)->setIsHighlighted(true);
-                        update();
-                    }
-                } else if(piece->getType() == Piece::Type::Rook) {
-                    if(Rook::isMoveValid(this,matrixPos,QPoint(x,y))) {
-                        getSquare(x,y)->setIsHighlighted(true);
-                        update();
-                    }
-                } else if(piece->getType() == Piece::Type::Bishop) {
-                    if(Bishop::isMoveValid(this,matrixPos,QPoint(x,y))) {
-                        getSquare(x,y)->setIsHighlighted(true);
-                        update();
-                    }
+
+                bool (*validator)(Board *, const QPoint &, const QPoint &);
+
+                switch(piece->getType()) {
+                case Piece::Type::Pawn: validator = & Pawn::isMoveValid; break;
+                case Piece::Type::Rook: validator = & Rook::isMoveValid; break;
+                case Piece::Type::Bishop: validator = & Bishop::isMoveValid; break;
+                case Piece::Type::Knight: validator = & Knight::isMoveValid; break;
+                case Piece::Type::Queen: validator = & Queen::isMoveValid; break;
+                case Piece::Type::King: validator = & King::isMoveValid; break;
                 }
+
+                if(validator(this,matrixPos,QPoint(x,y))) {
+                    getSquare(x,y)->setIsHighlighted(true);
+                    update();
+                }
+
             }
         }
 

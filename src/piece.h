@@ -40,6 +40,7 @@ public:
 
     bool getHasMoved() const;
     void setHasMoved(bool hasMoved);
+
 };
 
 #endif // PIECE_H
