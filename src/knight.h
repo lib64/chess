@@ -8,6 +8,9 @@ class Board;
 class Knight : public Piece
 {
 public:
+
+    static const QVector<QPoint> _moves;
+
     Knight(const QRectF &rect, Piece::Owner owner);
 
     virtual ~Knight() {}
