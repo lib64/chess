@@ -24,6 +24,9 @@ private:
 
     QVector<QVector<Square *>> _squares;
 
+    QVector<Piece *> _whitePieces;
+    QVector<Piece *> _blackPieces;
+
     QRectF _rect;
     Board::Player _turn;
 
@@ -57,6 +60,7 @@ public:
     void clearHighlighs();
 
     bool inCheck(Board::Player player);
+
 
 public slots:
 

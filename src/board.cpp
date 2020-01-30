@@ -12,7 +12,6 @@
 
 #include <QDebug>
 
-
 void Board::initSquares()
 {
     qreal sw = _rect.width() / BOARD_SIZE;
@@ -42,16 +41,20 @@ void Board::initSquares()
 
 void Board::initPieces()
 {
+    // pawns
     for(int i = 0; i < BOARD_SIZE; i++) {
         Pawn *pawn = new Pawn(_rect, Piece::Owner::White);
         getSquare(i, 6)->setPiece(pawn);
+        _whitePieces.append(pawn);
     }
 
     for(int i = 0; i < BOARD_SIZE; i++) {
         Pawn *pawn = new Pawn(_rect, Piece::Owner::Black);
         getSquare(i, 1)->setPiece(pawn);
+        _blackPieces.push_back(pawn);
     }
 
+    // rooks
     Rook *wr1 = new Rook(_rect, Piece::Owner::White);
     Rook *wr2 = new Rook(_rect, Piece::Owner::White);
     Rook *br1 = new Rook(_rect, Piece::Owner::Black);
@@ -60,7 +63,12 @@ void Board::initPieces()
     getSquare(7,7)->setPiece(wr2);
     getSquare(0,0)->setPiece(br1);
     getSquare(7,0)->setPiece(br2);
+    _whitePieces.push_back(wr1);
+    _whitePieces.push_back(wr2);
+    _blackPieces.push_back(br1);
+    _blackPieces.push_back(br2);
 
+    // knights
     Knight *wk1 = new Knight(_rect, Piece::Owner::White);
     Knight *wk2 = new Knight(_rect, Piece::Owner::White);
     Knight *bk1 = new Knight(_rect, Piece::Owner::Black);
@@ -69,7 +77,12 @@ void Board::initPieces()
     getSquare(6,7)->setPiece(wk2);
     getSquare(1,0)->setPiece(bk1);
     getSquare(6,0)->setPiece(bk2);
+    _whitePieces.push_back(wk1);
+    _whitePieces.push_back(wk2);
+    _blackPieces.push_back(bk1);
+    _blackPieces.push_back(bk2);
 
+    // bishops
     Bishop *wb1 = new Bishop(_rect, Piece::Owner::White);
     Bishop *wb2 = new Bishop(_rect, Piece::Owner::White);
     Bishop *bb1 = new Bishop(_rect, Piece::Owner::Black);
@@ -78,16 +91,26 @@ void Board::initPieces()
     getSquare(5,7)->setPiece(wb2);
     getSquare(2,0)->setPiece(bb1);
     getSquare(5,0)->setPiece(bb2);
+    _whitePieces.push_back(wb1);
+    _whitePieces.push_back(wb2);
+    _blackPieces.push_back(bb1);
+    _blackPieces.push_back(bb2);
 
+    // queens
     Queen *wq = new Queen(_rect, Piece::Owner::White);
     Queen *bq = new Queen(_rect, Piece::Owner::Black);
     getSquare(3,7)->setPiece(wq);
     getSquare(3,0)->setPiece(bq);
+    _whitePieces.push_back(wq);
+    _blackPieces.push_back(bq);
 
+    // kings
     King *wk = new King(_rect, Piece::Owner::White);
     King *bk = new King(_rect, Piece::Owner::Black);
     getSquare(4,7)->setPiece(wk);
     getSquare(4,0)->setPiece(bk);
+    _whitePieces.push_back(wk);
+    _blackPieces.push_back(bk);
 }
 
 Board::Board(const QRectF &rect, QGraphicsItem *parent)
@@ -117,15 +140,16 @@ Board::~Board()
     delete _whitePixmapSelected;
     delete _blackPixmapSelected;
 
+    for(int i = 0; i < _whitePieces.size(); i++) {
+        delete _whitePieces[i];
+    }
+    for(int i = 0; i < _blackPieces.size(); i++) {
+        delete _blackPieces[i];
+    }
+
     for(int y = 0; y < BOARD_SIZE; y++) {
         for(int x = 0; x < BOARD_SIZE; x++) {
             Square *square = getSquare(x,y);
-            Piece *piece = square->piece();
-
-            if(piece != nullptr) {
-                delete piece;
-            }
-
             square->deleteLater();
         }
     }
@@ -171,7 +195,52 @@ void Board::clearHighlighs()
 bool Board::inCheck(Board::Player player)
 {
 
+    Board::Player otherPlayer = (player == Board::Player::White) ? Board::Player::Black : Board::Player::White;
 
+    Piece *king = nullptr;
+    QPoint kingPos;
+
+    // find king
+    for(int y = 0; y < BOARD_SIZE; y++) {
+        for(int x = 0; x < BOARD_SIZE; x++) {
+
+            Piece *current = getSquare(x,y)->piece();
+            if(current != nullptr) {
+                if(current->getType() == Piece::Type::King &&
+                   static_cast<int>(current->getOwner()) == static_cast<int>(player)) {
+                    king = current;
+                    kingPos.setX(x);
+                    kingPos.setY(y);
+                }
+            }
+
+        }
+    }
+
+    if(king == nullptr) {
+        throw std::invalid_argument("there is no king.. something is wrong");
+    }
+
+    // check if any piece owned by otherPlayer is attacking the player king
+
+    for(int y = 0; y < BOARD_SIZE; y++) {
+        for(int x = 0; x < BOARD_SIZE; x++) {
+
+            Piece *current = getSquare(x,y)->piece();
+            if(current != nullptr) {
+                if( static_cast<int>(current->getOwner()) == static_cast<int>(otherPlayer)) {
+                    Validator val = getValidator(current->getType());
+                    if(val(this, QPoint(x,y), kingPos)) {
+                        // player is in check
+                        return true;
+                    }
+                }
+            }
+
+        }
+    }
+
+    return false;
 }
 
 void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
@@ -213,12 +282,32 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
 
         if(destSquare->isHighlighted()) {
 
+            // move the src piece
             srcSquare->setPiece(nullptr);
             destSquare->setPiece(srcPiece);
             srcPiece->setHasMoved(true);
 
+            // delete the dest piece
+            if(destPiece != nullptr) {
+                if(getTurn() == Board::Player::White) {
+                    _blackPieces.erase(_blackPieces.begin()+_blackPieces.indexOf(destPiece));
+                } else {
+                    _whitePieces.erase(_whitePieces.begin()+_whitePieces.indexOf(destPiece));
+                }
+                delete destPiece;
+            }
+
+
+            if(inCheck(Board::Player::White)) {
+                qDebug() << "white in check";
+            }
+            if(inCheck(Board::Player::Black)) {
+                qDebug() << "black in check";
+            }
+
             changeTurn();
-            delete destPiece;
+
+
         }
         _isSelected = false;
         clearHighlighs();
