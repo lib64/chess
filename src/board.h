@@ -53,20 +53,21 @@ public:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr);
 
     Square *getSquare(int x, int y);
-
     Board::Player getTurn() const;
     Board::Player getOtherTurn() const;
-
     QString getPlayerString(Board::Player player);
 
     void changeTurn();
-
     void getMovesForSquare(QVector<Move> &out, const QPoint &matrixPos);
     void getAllMovesForPlayer(QVector<Move> &out, Board::Player player);
     void highlightSquares(const QVector<QPoint> &squares);
     void clearHighlighs();
     bool inCheck(Board::Player player);
+    bool inCheckMate(Board::Player player);
     QPoint findKing(Board::Player player);
+    void showCheckDialog();
+    void showCheckMateDialog();
+    void showIllegalMoveMessage();
 
 public slots:
 
