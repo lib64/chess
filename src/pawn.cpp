@@ -4,10 +4,7 @@
 #include <QPainter>
 
 Pawn::Pawn(const QRectF &rect, Piece::Owner owner)
-    : Piece(rect, Piece::Type::Pawn, owner)
-{
-
-}
+    : Piece(rect, Piece::Type::Pawn, owner) {}
 
 QString Pawn::to_string() const
 {
@@ -16,7 +13,6 @@ QString Pawn::to_string() const
 
 bool Pawn::isMoveValid(Board *board, const QPoint &from, const QPoint &to, int turn)
 {
-
     Square *fromSquare = board->getSquare(from.x(), from.y());
     Square *toSquare = board->getSquare(to.x(), to.y());
 

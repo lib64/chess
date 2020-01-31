@@ -34,6 +34,7 @@ HEADERS += \
     king.h \
     knight.h \
     mainwindow.h \
+    move.h \
     pawn.h \
     piece.h \
     queen.h \

@@ -14,10 +14,7 @@ const QVector<QPoint> Knight::_moves = {
 };
 
 Knight::Knight(const QRectF &rect, Owner owner)
-    : Piece(rect, Piece::Type::Knight,owner)
-{
-
-}
+    : Piece(rect, Piece::Type::Knight,owner) {}
 
 QString Knight::to_string() const
 {

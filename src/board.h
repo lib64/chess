@@ -3,6 +3,7 @@
 
 #include "square.h"
 #include "piece.h"
+#include "move.h"
 
 
 #include <QGraphicsItem>
@@ -55,8 +56,13 @@ public:
     Board::Player getTurn() const;
     Board::Player getOtherTurn() const;
 
+    QString getPlayerString(Board::Player player);
+
     void changeTurn();
-    void highlightMoves(const QPoint &matrixPos, Board::Player turn);
+
+    void getMovesForSquare(QVector<Move> &out, const QPoint &matrixPos);
+
+    void highlightSquares(const QVector<QPoint> &squares);
     void clearHighlighs();
     bool inCheck(Board::Player player);
     QPoint findKing(Board::Player player);

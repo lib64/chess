@@ -3,10 +3,7 @@
 #include "bishop.h"
 
 Queen::Queen(const QRectF &rect, Piece::Owner owner)
-    : Piece(rect, Piece::Type::Queen, owner)
-{
-
-}
+    : Piece(rect, Piece::Type::Queen, owner) {}
 
 QString Queen::to_string() const
 {

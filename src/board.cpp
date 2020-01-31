@@ -164,6 +164,11 @@ Board::Player Board::getOtherTurn() const
     return (_turn == Board::Player::White) ? Board::Player::Black : Board::Player::White;
 }
 
+QString Board::getPlayerString(Board::Player player)
+{
+    return (player == Board::Player::White) ? "White" : "Black";
+}
+
 void Board::changeTurn()
 {
     _turn = (_turn == Board::Player::White)
@@ -171,20 +176,30 @@ void Board::changeTurn()
             : Board::Player::White;
 }
 
-void Board::highlightMoves(const QPoint &matrixPos, Board::Player turn)
+void Board::getMovesForSquare(QVector<Move> &out, const QPoint &matrixPos)
 {
     Square *square = getSquare(matrixPos.x(), matrixPos.y());
     Piece *piece = square->piece();
+    if(piece == nullptr) {
+        return;
+    }
     for(int y = 0; y < BOARD_SIZE; y++) {
         for(int x = 0; x < BOARD_SIZE; x++) {
             if(x == matrixPos.x() && y == matrixPos.y()) {
                 continue;
             }
-            if(getValidator(piece->getType())(this,matrixPos,QPoint(x,y), static_cast<int>(turn))) {
-                getSquare(x,y)->setIsHighlighted(true);
-                update();
+            if(getValidator(piece->getType())(this,matrixPos,QPoint(x,y), static_cast<int>(piece->getOwner()))) {
+                out.push_back(Move(matrixPos, QPoint(x,y)));
             }
         }
+    }
+}
+
+void Board::highlightSquares(const QVector<QPoint> &squares)
+{
+    for(int i = 0; i < squares.size(); i++) {
+        getSquare(squares[i].x(), squares[i].y())->setIsHighlighted(true);
+        getSquare(squares[i].x(), squares[i].y())->update();
     }
 }
 
@@ -206,11 +221,12 @@ bool Board::inCheck(Board::Player player)
         for(int x = 0; x < BOARD_SIZE; x++) {
             Piece *current = getSquare(x,y)->piece();
             if(current != nullptr) {
-                if( static_cast<int>(current->getOwner()) == static_cast<int>(otherPlayer)) {
-                    Validator val = getValidator(current->getType());
-                    if(val(this, QPoint(x,y), kingPos, static_cast<int>(otherPlayer))) {
-                        return true;
-                    }
+                if( static_cast<int>(current->getOwner()) != static_cast<int>(otherPlayer)) {
+                    continue;
+                }
+                Validator val = getValidator(current->getType());
+                if(val(this, QPoint(x,y), kingPos, static_cast<int>(otherPlayer))) {
+                    return true;
                 }
             }
         }
@@ -256,7 +272,18 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
         }
         _isSelected = true;
         _squareSelected = matrixPos;
-        highlightMoves(matrixPos, getTurn());
+
+
+        QVector<Move> moves;
+        getMovesForSquare(moves, matrixPos);
+
+        QVector<QPoint> points;
+        for(int i = 0; i < moves.size(); i++) {
+            points.push_back(moves[i].to());
+        }
+
+        highlightSquares(points);
+
 
     } else {
 
@@ -273,7 +300,8 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
             // if moving player is in check
             if(inCheck(getTurn())) {
                 QMessageBox *msgBox = new QMessageBox;
-                msgBox->setText("Illegal move: puts moving player in check.");
+                msgBox->setWindowTitle("Illegal Move!");
+                msgBox->setText("This move would put the moving player ("+getPlayerString(getTurn())+") in check.");
                 msgBox->exec();
 
                 // undo move
@@ -286,12 +314,12 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
             // if non-moving player is in check
             else if(inCheck(getOtherTurn())) {
 
+                // todo checkmate
+
                 update();
                 QMessageBox *msgBox = new QMessageBox;
-                msgBox->setText("check.");
+                msgBox->setText(getPlayerString(getOtherTurn()) + " is in check.");
                 msgBox->exec();
-
-                // todo checkmate
 
                 // delete the dest piece
                 if(piece != nullptr) {

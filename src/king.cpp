@@ -1,10 +1,7 @@
 #include "king.h"
 #include "queen.h"
 King::King(const QRectF &rect, Owner owner)
-    : Piece(rect, Piece::Type::King, owner)
-{
-
-}
+    : Piece(rect, Piece::Type::King, owner) {}
 
 QString King::to_string() const
 {

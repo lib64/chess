@@ -3,10 +3,7 @@
 #include "board.h"
 
 Bishop::Bishop(const QRectF &rect, Piece::Owner owner)
-    : Piece(rect, Piece::Type::Bishop, owner)
-{
-
-}
+    : Piece(rect, Piece::Type::Bishop, owner) {}
 
 QString Bishop::to_string() const
 {
