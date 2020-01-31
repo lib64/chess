@@ -12,8 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
     _scene = new QGraphicsScene(this);
     ui->graphicsView->setScene(_scene);
 
-    _board = new Board(QRectF(0,0,800,800));
-    _scene->addItem(_board);
+    _board = nullptr;
 
 }
 
@@ -23,3 +22,15 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+void MainWindow::on_actionNew_Game_triggered()
+{
+
+    if(_board != nullptr) {
+        _scene->removeItem(_board);
+        delete _board;
+    }
+
+    _board = new Board(QRectF(0,0,800,800));
+    _scene->addItem(_board);
+}

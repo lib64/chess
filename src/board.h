@@ -36,9 +36,10 @@ private:
     bool _isSelected;
     QPoint _squareSelected;
 
-
     bool _isWhiteInCheck;
     bool _isBlackInCheck;
+
+    bool _gameOver;
 
     void initSquares();
 
@@ -61,7 +62,7 @@ public:
     void changeTurn();
 
     void getMovesForSquare(QVector<Move> &out, const QPoint &matrixPos);
-
+    void getAllMovesForPlayer(QVector<Move> &out, Board::Player player);
     void highlightSquares(const QVector<QPoint> &squares);
     void clearHighlighs();
     bool inCheck(Board::Player player);

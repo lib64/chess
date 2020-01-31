@@ -109,6 +109,7 @@ Board::Board(const QRectF &rect, QGraphicsItem *parent)
 
     _isWhiteInCheck = false;
     _isBlackInCheck = false;
+    _gameOver = false;
 
     _whitePixmap = new QPixmap(":/images/white.jpg");
     _blackPixmap = new QPixmap(":/images/black.jpg");
@@ -195,6 +196,21 @@ void Board::getMovesForSquare(QVector<Move> &out, const QPoint &matrixPos)
     }
 }
 
+void Board::getAllMovesForPlayer(QVector<Move> &out, Board::Player player)
+{
+    for(int y = 0; y < BOARD_SIZE; y++) {
+        for(int x = 0; x < BOARD_SIZE; x++) {
+            Square *square = getSquare(x,y);
+            Piece *piece = square->piece();
+            if(piece != nullptr) {
+                if(static_cast<int>(piece->getOwner()) == static_cast<int>(player)) {
+                    getMovesForSquare(out, QPoint(x,y));
+                }
+            }
+        }
+    }
+}
+
 void Board::highlightSquares(const QVector<QPoint> &squares)
 {
     for(int i = 0; i < squares.size(); i++) {
@@ -259,6 +275,11 @@ QPoint Board::findKing(Board::Player player)
 
 void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
 {
+
+    if(_gameOver) {
+        return;
+    }
+
     Square *square = getSquare(matrixPos.x(), matrixPos.y());
     Piece *piece = square->piece();
 
@@ -314,12 +335,58 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
             // if non-moving player is in check
             else if(inCheck(getOtherTurn())) {
 
-                // todo checkmate
+                // check for checkmate
+                // get all possible moves for the non-moving player
+                QVector<Move> moves;
+                getAllMovesForPlayer(moves, getOtherTurn());
 
-                update();
-                QMessageBox *msgBox = new QMessageBox;
-                msgBox->setText(getPlayerString(getOtherTurn()) + " is in check.");
-                msgBox->exec();
+                bool checkmate = true;
+
+                for(int i = 0; i < moves.size(); i++) {
+
+                    Square *fsq = getSquare(moves[i].from().x(), moves[i].from().y());
+                    Square *tsq = getSquare(moves[i].to().x(), moves[i].to().y());
+
+                    // backup to piece
+                    Piece *backup = tsq->piece();
+
+                    // make move
+                    tsq->setPiece(fsq->piece());
+
+                    // see if we are still in check
+                    if(!inCheck(getOtherTurn())) {
+                        checkmate = false;
+                    }
+
+                    // undo move
+                    fsq->setPiece(tsq->piece());
+                    tsq->setPiece(backup);
+
+                    if(!checkmate) {
+                        break;
+                    }
+
+                }
+
+                if(checkmate) {
+
+                    update();
+                    QMessageBox *msgBox = new QMessageBox;
+                    msgBox->setWindowTitle("Checkmate!");
+                    msgBox->setText("Checkmate! " + getPlayerString(getTurn()) + " wins!");
+                    msgBox->exec();
+
+                    _gameOver = true;
+
+                } else {
+
+                    update();
+                    QMessageBox *msgBox = new QMessageBox;
+                    msgBox->setWindowTitle("Check!");
+                    msgBox->setText(getPlayerString(getOtherTurn()) + " is in check.");
+                    msgBox->exec();
+
+                }
 
                 // delete the dest piece
                 if(piece != nullptr) {
