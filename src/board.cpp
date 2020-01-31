@@ -46,13 +46,11 @@ void Board::initPieces()
     for(int i = 0; i < BOARD_SIZE; i++) {
         Pawn *pawn = new Pawn(_rect, Piece::Owner::White);
         getSquare(i, 6)->setPiece(pawn);
-        _whitePieces.append(pawn);
     }
 
     for(int i = 0; i < BOARD_SIZE; i++) {
         Pawn *pawn = new Pawn(_rect, Piece::Owner::Black);
         getSquare(i, 1)->setPiece(pawn);
-        _blackPieces.push_back(pawn);
     }
 
     // rooks
@@ -64,10 +62,6 @@ void Board::initPieces()
     getSquare(7,7)->setPiece(wr2);
     getSquare(0,0)->setPiece(br1);
     getSquare(7,0)->setPiece(br2);
-    _whitePieces.push_back(wr1);
-    _whitePieces.push_back(wr2);
-    _blackPieces.push_back(br1);
-    _blackPieces.push_back(br2);
 
     // knights
     Knight *wk1 = new Knight(_rect, Piece::Owner::White);
@@ -78,10 +72,6 @@ void Board::initPieces()
     getSquare(6,7)->setPiece(wk2);
     getSquare(1,0)->setPiece(bk1);
     getSquare(6,0)->setPiece(bk2);
-    _whitePieces.push_back(wk1);
-    _whitePieces.push_back(wk2);
-    _blackPieces.push_back(bk1);
-    _blackPieces.push_back(bk2);
 
     // bishops
     Bishop *wb1 = new Bishop(_rect, Piece::Owner::White);
@@ -92,26 +82,19 @@ void Board::initPieces()
     getSquare(5,7)->setPiece(wb2);
     getSquare(2,0)->setPiece(bb1);
     getSquare(5,0)->setPiece(bb2);
-    _whitePieces.push_back(wb1);
-    _whitePieces.push_back(wb2);
-    _blackPieces.push_back(bb1);
-    _blackPieces.push_back(bb2);
 
     // queens
     Queen *wq = new Queen(_rect, Piece::Owner::White);
     Queen *bq = new Queen(_rect, Piece::Owner::Black);
     getSquare(3,7)->setPiece(wq);
     getSquare(3,0)->setPiece(bq);
-    _whitePieces.push_back(wq);
-    _blackPieces.push_back(bq);
 
     // kings
     King *wk = new King(_rect, Piece::Owner::White);
     King *bk = new King(_rect, Piece::Owner::Black);
     getSquare(4,7)->setPiece(wk);
     getSquare(4,0)->setPiece(bk);
-    _whitePieces.push_back(wk);
-    _blackPieces.push_back(bk);
+
 }
 
 Board::Board(const QRectF &rect, QGraphicsItem *parent)
@@ -144,16 +127,13 @@ Board::~Board()
     delete _whitePixmapSelected;
     delete _blackPixmapSelected;
 
-    for(int i = 0; i < _whitePieces.size(); i++) {
-        delete _whitePieces[i];
-    }
-    for(int i = 0; i < _blackPieces.size(); i++) {
-        delete _blackPieces[i];
-    }
-
     for(int y = 0; y < BOARD_SIZE; y++) {
         for(int x = 0; x < BOARD_SIZE; x++) {
             Square *square = getSquare(x,y);
+            Piece *piece = square->piece();
+            if(piece != nullptr) {
+                delete piece;
+            }
             square->deleteLater();
         }
     }
@@ -179,11 +159,33 @@ Board::Player Board::getTurn() const
     return _turn;
 }
 
+Board::Player Board::getOtherTurn() const
+{
+    return (_turn == Board::Player::White) ? Board::Player::Black : Board::Player::White;
+}
+
 void Board::changeTurn()
 {
     _turn = (_turn == Board::Player::White)
             ? Board::Player::Black
             : Board::Player::White;
+}
+
+void Board::highlightMoves(const QPoint &matrixPos, Board::Player turn)
+{
+    Square *square = getSquare(matrixPos.x(), matrixPos.y());
+    Piece *piece = square->piece();
+    for(int y = 0; y < BOARD_SIZE; y++) {
+        for(int x = 0; x < BOARD_SIZE; x++) {
+            if(x == matrixPos.x() && y == matrixPos.y()) {
+                continue;
+            }
+            if(getValidator(piece->getType())(this,matrixPos,QPoint(x,y), static_cast<int>(turn))) {
+                getSquare(x,y)->setIsHighlighted(true);
+                update();
+            }
+        }
+    }
 }
 
 void Board::clearHighlighs()
@@ -198,53 +200,45 @@ void Board::clearHighlighs()
 
 bool Board::inCheck(Board::Player player)
 {
-
     Board::Player otherPlayer = (player == Board::Player::White) ? Board::Player::Black : Board::Player::White;
-
-    Piece *king = nullptr;
-    QPoint kingPos;
-
-    // find king
+    QPoint kingPos = findKing(player);
     for(int y = 0; y < BOARD_SIZE; y++) {
         for(int x = 0; x < BOARD_SIZE; x++) {
-
-            Piece *current = getSquare(x,y)->piece();
-            if(current != nullptr) {
-                if(current->getType() == Piece::Type::King &&
-                   static_cast<int>(current->getOwner()) == static_cast<int>(player)) {
-                    king = current;
-                    kingPos.setX(x);
-                    kingPos.setY(y);
-                }
-            }
-
-        }
-    }
-
-    if(king == nullptr) {
-        throw std::invalid_argument("there is no king.. something is wrong");
-    }
-
-    // check if any piece owned by otherPlayer is attacking the player king
-
-    for(int y = 0; y < BOARD_SIZE; y++) {
-        for(int x = 0; x < BOARD_SIZE; x++) {
-
             Piece *current = getSquare(x,y)->piece();
             if(current != nullptr) {
                 if( static_cast<int>(current->getOwner()) == static_cast<int>(otherPlayer)) {
                     Validator val = getValidator(current->getType());
-                    if(val(this, QPoint(x,y), kingPos)) {
-                        // player is in check
+                    if(val(this, QPoint(x,y), kingPos, static_cast<int>(otherPlayer))) {
                         return true;
                     }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+QPoint Board::findKing(Board::Player player)
+{
+    QPoint kingPos;
+    bool found = false;
+    for(int y = 0; y < BOARD_SIZE; y++) {
+        for(int x = 0; x < BOARD_SIZE; x++) {
+            Piece *current = getSquare(x,y)->piece();
+            if(current != nullptr) {
+                if(current->getType() == Piece::Type::King &&
+                   static_cast<int>(current->getOwner()) == static_cast<int>(player)) {
+                    kingPos = QPoint(x,y);
+                    found = true;
                 }
             }
 
         }
     }
-
-    return false;
+    if(!found) {
+        throw std::invalid_argument("king not found");
+    }
+    return kingPos;
 }
 
 void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
@@ -253,83 +247,61 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
     Piece *piece = square->piece();
 
     if(!_isSelected) {
+
         if(piece == nullptr) {
             return;
         }
         if(static_cast<int>(piece->getOwner()) != static_cast<int>(getTurn())) {
             return;
         }
-
         _isSelected = true;
         _squareSelected = matrixPos;
-
-        for(int y = 0; y < BOARD_SIZE; y++) {
-            for(int x = 0; x < BOARD_SIZE; x++) {
-
-                if(x == matrixPos.x() && y == matrixPos.y()) {
-                    continue;
-                }
-                if(getValidator(piece->getType())(this,matrixPos,QPoint(x,y))) {
-                    getSquare(x,y)->setIsHighlighted(true);
-                    update();
-                }
-            }
-        }
+        highlightMoves(matrixPos, getTurn());
 
     } else {
 
         Square *srcSquare = getSquare(_squareSelected.x(), _squareSelected.y());
         Piece *srcPiece = srcSquare->piece();
 
-        Square *destSquare = getSquare(matrixPos.x(), matrixPos.y());
-        Piece *destPiece = destSquare->piece();
-
-        if(destSquare->isHighlighted()) {
+        if(square->isHighlighted()) {
 
             // move the src piece
             srcSquare->setPiece(nullptr);
-            destSquare->setPiece(srcPiece);
+            square->setPiece(srcPiece);
             srcPiece->setHasMoved(true);
 
             // if moving player is in check
             if(inCheck(getTurn())) {
-
                 QMessageBox *msgBox = new QMessageBox;
                 msgBox->setText("Illegal move: puts moving player in check.");
                 msgBox->exec();
 
-                _isSelected = false;
-                clearHighlighs();
-                return;
+                // undo move
+                square->setPiece(piece);
+                srcSquare->setPiece(srcPiece);
+                srcPiece->setHasMoved(false);
+
+                changeTurn();
             }
-
             // if non-moving player is in check
-            if(inCheck( (getTurn() == Board::Player::White) ? Board::Player::Black : Board::Player::White )) {
-
+            else if(inCheck(getOtherTurn())) {
 
                 update();
                 QMessageBox *msgBox = new QMessageBox;
                 msgBox->setText("check.");
                 msgBox->exec();
 
+                // todo checkmate
 
-            }
-
-
-            // delete the dest piece
-            if(destPiece != nullptr) {
-                if(getTurn() == Board::Player::White) {
-                    _blackPieces.erase(_blackPieces.begin()+_blackPieces.indexOf(destPiece));
-                } else {
-                    _whitePieces.erase(_whitePieces.begin()+_whitePieces.indexOf(destPiece));
+                // delete the dest piece
+                if(piece != nullptr) {
+                    delete piece;
                 }
-                delete destPiece;
             }
-
 
             changeTurn();
-        }
 
+        }
         _isSelected = false;
         clearHighlighs();
     }
@@ -337,7 +309,7 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
 
 Validator getValidator(Piece::Type type)
 {
-    bool (*val)(Board *, const QPoint &, const QPoint &);
+    bool (*val)(Board *, const QPoint &, const QPoint &, int);
     switch(type) {
     case Piece::Type::Pawn: val = & Pawn::isMoveValid; break;
     case Piece::Type::Rook: val = & Rook::isMoveValid; break;

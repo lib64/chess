@@ -17,7 +17,7 @@ public:
 
     QString to_string() const;
 
-    static bool isMoveValid(Board *board, const QPoint &from, const QPoint &to);
+    static bool isMoveValid(Board *board, const QPoint &from, const QPoint &to, int turn);
 
 };
 

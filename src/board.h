@@ -24,9 +24,6 @@ private:
 
     QVector<QVector<Square *>> _squares;
 
-    QVector<Piece *> _whitePieces;
-    QVector<Piece *> _blackPieces;
-
     QRectF _rect;
     Board::Player _turn;
 
@@ -48,31 +45,28 @@ private:
 
 public:
     Board(const QRectF &rect, QGraphicsItem *parent=nullptr);
-
     ~Board();
 
     QRectF boundingRect() const;
-
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr);
 
     Square *getSquare(int x, int y);
 
     Board::Player getTurn() const;
+    Board::Player getOtherTurn() const;
 
     void changeTurn();
-
+    void highlightMoves(const QPoint &matrixPos, Board::Player turn);
     void clearHighlighs();
-
     bool inCheck(Board::Player player);
-
+    QPoint findKing(Board::Player player);
 
 public slots:
 
     void on_actionSquareLeftClick(const QPoint &matrixPos);
-
 };
 
-typedef bool (*Validator)(Board *, const QPoint &, const QPoint &);
+typedef bool (*Validator)(Board *, const QPoint &, const QPoint &, int);
 
 Validator getValidator(Piece::Type type);
 

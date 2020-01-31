@@ -14,7 +14,7 @@ QString Pawn::to_string() const
     return (getOwner() == Piece::Owner::White) ? "♙" : "♟";
 }
 
-bool Pawn::isMoveValid(Board *board, const QPoint &from, const QPoint &to)
+bool Pawn::isMoveValid(Board *board, const QPoint &from, const QPoint &to, int turn)
 {
 
     Square *fromSquare = board->getSquare(from.x(), from.y());
@@ -25,7 +25,7 @@ bool Pawn::isMoveValid(Board *board, const QPoint &from, const QPoint &to)
 
     if(toPiece != nullptr) {
         // we cant move one of our pawns to a space occupied by one of our pieces
-        if(static_cast<int>(toPiece->getOwner()) == static_cast<int>(board->getTurn())) {
+        if(static_cast<int>(toPiece->getOwner()) == turn) {
             return false;
         }
     }
@@ -34,7 +34,7 @@ bool Pawn::isMoveValid(Board *board, const QPoint &from, const QPoint &to)
     int dy = to.y() - from.y();
 
     // if we are a white pawn...
-    if(board->getTurn() == Board::Player::White) {
+    if(turn == static_cast<int>(Board::Player::White)) {
         // we cant move down
         if(dy > 0) {
             return false;
@@ -90,7 +90,7 @@ bool Pawn::isMoveValid(Board *board, const QPoint &from, const QPoint &to)
         // the pawn cant jump any pieces
         Square *middleSquare;
 
-        if(board->getTurn() == Board::Player::White) {
+        if(turn == static_cast<int>(Board::Player::White)) {
             middleSquare = board->getSquare(from.x(), to.y() + 1);
         } else {
             middleSquare = board->getSquare(from.x(), to.y() - 1);

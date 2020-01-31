@@ -13,7 +13,7 @@ QString Rook::to_string() const
     return (getOwner() == Piece::Owner::White) ? "♖" : "♜";
 }
 
-bool Rook::isMoveValid(Board *board, const QPoint &from, const QPoint &to)
+bool Rook::isMoveValid(Board *board, const QPoint &from, const QPoint &to, int turn)
 {
     Square *toSquare = board->getSquare(to.x(), to.y());
     
@@ -23,7 +23,7 @@ bool Rook::isMoveValid(Board *board, const QPoint &from, const QPoint &to)
     int dy = to.y() - from.y();
 
     if(toPiece != nullptr) {
-        if(static_cast<int>(toPiece->getOwner()) == static_cast<int>(board->getTurn())) {
+        if(static_cast<int>(toPiece->getOwner()) == turn) {
             return false;
         }
     }

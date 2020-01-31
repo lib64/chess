@@ -24,13 +24,13 @@ QString Knight::to_string() const
     return (getOwner() == Piece::Owner::White) ? "♘" : "♞";
 }
 
-bool Knight::isMoveValid(Board *board, const QPoint &from, const QPoint &to)
+bool Knight::isMoveValid(Board *board, const QPoint &from, const QPoint &to, int turn)
 {
     Square *toSquare = board->getSquare(to.x(), to.y());
     Piece *toPiece = toSquare->piece();
 
     if(toPiece != nullptr) {
-        if(static_cast<int>(toPiece->getOwner()) == static_cast<int>(board->getTurn())) {
+        if(static_cast<int>(toPiece->getOwner()) == turn) {
             return false;
         }
     }

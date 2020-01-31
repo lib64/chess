@@ -13,7 +13,7 @@ QString Queen::to_string() const
     return (getOwner() == Piece::Owner::White) ? "♕" : "♛";
 }
 
-bool Queen::isMoveValid(Board *board, const QPoint &from, const QPoint &to)
+bool Queen::isMoveValid(Board *board, const QPoint &from, const QPoint &to, int turn)
 {
-    return Bishop::isMoveValid(board, from, to) || Rook::isMoveValid(board, from, to);
+    return Bishop::isMoveValid(board, from, to, turn) || Rook::isMoveValid(board, from, to, turn);
 }
