@@ -11,8 +11,6 @@
 #include <QObject>
 #include <QMessageBox>
 
-#include <QDebug>
-
 void Board::initSquares()
 {
     qreal sw = _rect.width() / BOARD_SIZE;
