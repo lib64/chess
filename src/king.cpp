@@ -10,10 +10,8 @@ QString King::to_string() const
     return (getOwner() == Piece::Owner::White) ? "♔" : "♚";
 }
 
-// todo queen-side and king-side castle
 bool King::isMoveValid(Board *board, const QPoint &from, const QPoint &to, int turn)
 {
-
     Square *square = board->getSquare(from.x(), from.y());
     Piece *piece = square->piece();
 
@@ -51,10 +49,38 @@ bool King::isMoveValid(Board *board, const QPoint &from, const QPoint &to, int t
                 return true;
             }
         }
+        // black queen-side castle
+        if(to == QPoint(1,0)) {
+            Piece *lrook = board->getSquare(0,0)->piece();
+            if(lrook == nullptr) {
+                return false;
+            }
+            if(lrook->getHasMoved()) {
+                return false;
+            }
+            if(board->getSquare(1,0)->piece() != nullptr ||
+               board->getSquare(2,0)->piece() != nullptr ||
+               board->getSquare(3,0)->piece() != nullptr) {
+                return false;
+            }
+            return true;
+        }
+        // black king side castle
+        else if(to == QPoint(6,0)) {
+            Piece *rrook = board->getSquare(7,0)->piece();
+            if(rrook == nullptr) {
+                return false;
+            }
+            if(rrook->getHasMoved()) {
+                return false;
+            }
+            if(board->getSquare(5,0)->piece() != nullptr ||
+               board->getSquare(6,0)->piece() != nullptr) {
+                return false;
+            }
+            return true;
+        }
     }
-
-
-
     int dx = from.x() - to.x();
     int dy = from.y() - to.y();
     if(abs(dx) > 1 || abs(dy)  > 1) {
