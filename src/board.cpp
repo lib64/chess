@@ -367,6 +367,8 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
             square->setPiece(srcPiece);
             srcPiece->setHasMoved(true);
 
+            update();
+
             // if moving player is in check
             if(inCheck(getTurn())) {
 
