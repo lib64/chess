@@ -74,7 +74,6 @@ public:
     void makeMove(Square *from, Square *to);
     void undoLastMove();
 
-
 public slots:
 
     void on_actionSquareLeftClick(const QPoint &matrixPos);

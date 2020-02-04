@@ -341,7 +341,7 @@ void Board::makeMove(Square *from, Square *to)
         // queen side
         if(to->matrixPos() == QPoint(2,7)) {
             Square *rookFrom = getSquare(0,7);
-            Square *rookTo = getSquare(2,7);
+            Square *rookTo = getSquare(3,7);
             Piece *rook = rookFrom->piece();
             rookTo->setPiece(rook);
             rookFrom->setPiece(nullptr);
@@ -361,7 +361,7 @@ void Board::makeMove(Square *from, Square *to)
         // queen side
         if(to->matrixPos() == QPoint(2,0)) {
             Square *rookFrom = getSquare(0,0);
-            Square *rookTo = getSquare(2,0);
+            Square *rookTo = getSquare(3,0);
             Piece *rook = rookFrom->piece();
             rookTo->setPiece(rook);
             rookFrom->setPiece(nullptr);
