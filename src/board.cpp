@@ -397,7 +397,7 @@ void Board::undoLastMove()
         // queen side
         if(_backupTo->matrixPos() == QPoint(2,7)) {
 
-            Square *rookFrom = getSquare(2,7);
+            Square *rookFrom = getSquare(3,7);
             Square *rookTo = getSquare(0,7);
             Piece *rook = rookFrom->piece();
             rookTo->setPiece(rook);
@@ -417,7 +417,7 @@ void Board::undoLastMove()
        toPiece->getType() == Piece::Type::King) {
         // queen side
         if(_backupTo->matrixPos() == QPoint(2,0)) {
-            Square *rookFrom = getSquare(2,0);
+            Square *rookFrom = getSquare(3,0);
             Square *rookTo = getSquare(0,0);
             Piece *rook = rookFrom->piece();
             rookTo->setPiece(rook);
