@@ -109,6 +109,10 @@ Board::Board(const QRectF &rect, QGraphicsItem *parent)
     _isBlackInCheck = false;
     _gameOver = false;
 
+    _backupPiece = nullptr;
+    _backupFrom = nullptr;
+    _backupTo = nullptr;
+
     _whitePixmap = new QPixmap(":/images/white.jpg");
     _blackPixmap = new QPixmap(":/images/black.jpg");
     _whitePixmapSelected = new QPixmap(":/images/white-selected.jpg");
@@ -260,17 +264,15 @@ bool Board::inCheckMate(Board::Player player)
 
         Square *fsq = getSquare(moves[i].from().x(), moves[i].from().y());
         Square *tsq = getSquare(moves[i].to().x(), moves[i].to().y());
-        // backup to piece
-        Piece *backup = tsq->piece();
-        // make move
-        tsq->setPiece(fsq->piece());
+
+        makeMove(fsq,tsq);
+
         // see if we are still in check
         if(!inCheck(player)) {
             checkmate = false;
         }
-        // undo move
-        fsq->setPiece(tsq->piece());
-        tsq->setPiece(backup);
+
+        undoLastMove();
 
         if(!checkmate) {
             break;
@@ -326,6 +328,119 @@ void Board::showIllegalMoveMessage()
     msgBox->exec();
 }
 
+// make a move and save it, beacuse we may need to undo it
+void Board::makeMove(Square *from, Square *to)
+{
+    Piece *fromPiece = from->piece();
+    Piece *toPiece = to->piece();
+
+    // white king
+    if(from->matrixPos() == QPoint(4,7) &&
+       fromPiece->getType() == Piece::Type::King) {
+
+        // queen side
+        if(to->matrixPos() == QPoint(2,7)) {
+            Square *rookFrom = getSquare(0,7);
+            Square *rookTo = getSquare(2,7);
+            Piece *rook = rookFrom->piece();
+            rookTo->setPiece(rook);
+            rookFrom->setPiece(nullptr);
+        }
+        // king side
+        else if(to->matrixPos() == QPoint(6,7)) {
+            Square *rookFrom = getSquare(7,7);
+            Square *rookTo = getSquare(5,7);
+            Piece *rook = rookFrom->piece();
+            rookTo->setPiece(rook);
+            rookFrom->setPiece(nullptr);
+        }
+    }
+    // black king
+    else if(from->matrixPos() == QPoint(4,0) &&
+       fromPiece->getType() == Piece::Type::King) {
+        // queen side
+        if(to->matrixPos() == QPoint(2,0)) {
+            Square *rookFrom = getSquare(0,0);
+            Square *rookTo = getSquare(2,0);
+            Piece *rook = rookFrom->piece();
+            rookTo->setPiece(rook);
+            rookFrom->setPiece(nullptr);
+        }
+        // king side
+        else if(to->matrixPos() == QPoint(6,0)) {
+            Square *rookFrom = getSquare(7,0);
+            Square *rookTo = getSquare(5,0);
+            Piece *rook = rookFrom->piece();
+            rookTo->setPiece(rook);
+            rookFrom->setPiece(nullptr);
+        }
+    }
+
+    _backupFrom = from;
+    _backupTo = to;
+
+    _backupPiece = toPiece;
+
+    from->setPiece(nullptr);
+    to->setPiece(fromPiece);
+
+}
+
+void Board::undoLastMove()
+{
+    Piece *fromPiece = _backupFrom->piece();
+    Piece *toPiece = _backupTo->piece();
+
+    // white king
+    if(_backupFrom->matrixPos() == QPoint(4,7) &&
+       toPiece->getType() == Piece::Type::King) {
+        // queen side
+        if(_backupTo->matrixPos() == QPoint(2,7)) {
+
+            Square *rookFrom = getSquare(2,7);
+            Square *rookTo = getSquare(0,7);
+            Piece *rook = rookFrom->piece();
+            rookTo->setPiece(rook);
+            rookFrom->setPiece(nullptr);
+        }
+        // king side
+        else if(_backupTo->matrixPos() == QPoint(6,7)) {
+            Square *rookFrom = getSquare(5,7);
+            Square *rookTo = getSquare(7,7);
+            Piece *rook = rookFrom->piece();
+            rookTo->setPiece(rook);
+            rookFrom->setPiece(nullptr);
+        }
+    }
+    // black king
+    if(_backupFrom->matrixPos() == QPoint(4,0) &&
+       toPiece->getType() == Piece::Type::King) {
+        // queen side
+        if(_backupTo->matrixPos() == QPoint(2,0)) {
+            Square *rookFrom = getSquare(2,0);
+            Square *rookTo = getSquare(0,0);
+            Piece *rook = rookFrom->piece();
+            rookTo->setPiece(rook);
+            rookFrom->setPiece(nullptr);
+        }
+        // king side
+        else if(_backupTo->matrixPos() == QPoint(6,0)) {
+            Square *rookFrom = getSquare(5,0);
+            Square *rookTo = getSquare(7,0);
+            Piece *rook = rookFrom->piece();
+            rookTo->setPiece(rook);
+            rookFrom->setPiece(nullptr);
+        }
+    }
+
+    _backupFrom->setPiece(toPiece);
+    _backupTo->setPiece(_backupPiece);
+
+    _backupFrom = nullptr;
+    _backupTo = nullptr;
+    _backupPiece = nullptr;
+}
+
 void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
 {
     if(_gameOver) {
@@ -363,8 +478,8 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
         if(square->isHighlighted()) {
 
             // move the src piece
-            srcSquare->setPiece(nullptr);
-            square->setPiece(srcPiece);
+            makeMove(srcSquare, square);
+
             srcPiece->setHasMoved(true);
 
             update();
@@ -375,8 +490,10 @@ void Board::on_actionSquareLeftClick(const QPoint &matrixPos)
                 showIllegalMoveMessage();
 
                 // undo move
-                square->setPiece(piece);
-                srcSquare->setPiece(srcPiece);
+                undoLastMove();
+
+
+
                 srcPiece->setHasMoved(false);
                 update();
 

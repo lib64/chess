@@ -14,11 +14,10 @@ bool King::isMoveValid(Board *board, const QPoint &from, const QPoint &to, int t
 {
     Square *square = board->getSquare(from.x(), from.y());
     Piece *piece = square->piece();
-
     if(!piece->getHasMoved()) {
         if(turn == static_cast<int>(Board::Player::White)) {
             // white queen-side castle
-            if(to == QPoint(1,7)) {
+            if(to == QPoint(2,7)) {
                 Piece *lrook = board->getSquare(0,7)->piece();
                 if(lrook == nullptr) {
                     return false;
@@ -26,8 +25,7 @@ bool King::isMoveValid(Board *board, const QPoint &from, const QPoint &to, int t
                 if(lrook->getHasMoved()) {
                     return false;
                 }
-                if(board->getSquare(1,7)->piece() != nullptr ||
-                   board->getSquare(2,7)->piece() != nullptr ||
+                if(board->getSquare(2,7)->piece() != nullptr ||
                    board->getSquare(3,7)->piece() != nullptr) {
                     return false;
                 }
@@ -50,35 +48,36 @@ bool King::isMoveValid(Board *board, const QPoint &from, const QPoint &to, int t
             }
         }
         // black queen-side castle
-        if(to == QPoint(1,0)) {
-            Piece *lrook = board->getSquare(0,0)->piece();
-            if(lrook == nullptr) {
-                return false;
+        else {
+            if(to == QPoint(2,0)) {
+                Piece *lrook = board->getSquare(0,0)->piece();
+                if(lrook == nullptr) {
+                    return false;
+                }
+                if(lrook->getHasMoved()) {
+                    return false;
+                }
+                if(board->getSquare(2,0)->piece() != nullptr ||
+                   board->getSquare(3,0)->piece() != nullptr) {
+                    return false;
+                }
+                return true;
             }
-            if(lrook->getHasMoved()) {
-                return false;
+            // black king side castle
+            else if(to == QPoint(6,0)) {
+                Piece *rrook = board->getSquare(7,0)->piece();
+                if(rrook == nullptr) {
+                    return false;
+                }
+                if(rrook->getHasMoved()) {
+                    return false;
+                }
+                if(board->getSquare(5,0)->piece() != nullptr ||
+                   board->getSquare(6,0)->piece() != nullptr) {
+                    return false;
+                }
+                return true;
             }
-            if(board->getSquare(1,0)->piece() != nullptr ||
-               board->getSquare(2,0)->piece() != nullptr ||
-               board->getSquare(3,0)->piece() != nullptr) {
-                return false;
-            }
-            return true;
-        }
-        // black king side castle
-        else if(to == QPoint(6,0)) {
-            Piece *rrook = board->getSquare(7,0)->piece();
-            if(rrook == nullptr) {
-                return false;
-            }
-            if(rrook->getHasMoved()) {
-                return false;
-            }
-            if(board->getSquare(5,0)->piece() != nullptr ||
-               board->getSquare(6,0)->piece() != nullptr) {
-                return false;
-            }
-            return true;
         }
     }
     int dx = from.x() - to.x();

@@ -29,6 +29,8 @@ public:
     bool isHighlighted() const;
     void setIsHighlighted(bool isHighlighted);
 
+    QPoint matrixPos() const;
+
 protected:
 
     void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

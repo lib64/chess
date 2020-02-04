@@ -13,6 +13,11 @@ void Square::setIsHighlighted(bool isHighlighted)
     _isHighlighted = isHighlighted;
 }
 
+QPoint Square::matrixPos() const
+{
+    return _matrixPos;
+}
+
 Square::Square(const QPoint &matrixPos, const QRectF &rect, QGraphicsItem *parent, QPixmap *texture, QPixmap *textureSelected)
     : QGraphicsObject(parent)
 {

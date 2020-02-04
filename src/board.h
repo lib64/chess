@@ -41,6 +41,9 @@ private:
 
     bool _gameOver;
 
+    Piece *_backupPiece;
+    Square *_backupFrom, *_backupTo;
+
     void initSquares();
 
     void initPieces();
@@ -68,6 +71,9 @@ public:
     void showCheckDialog();
     void showCheckMateDialog();
     void showIllegalMoveMessage();
+    void makeMove(Square *from, Square *to);
+    void undoLastMove();
+
 
 public slots:
 
